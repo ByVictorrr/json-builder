@@ -1,4 +1,4 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import ConanFile, CMake, tools
 
 class JsonBuilderConan(ConanFile):
 
@@ -8,26 +8,26 @@ class JsonBuilderConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
     default_options = {"shared": False}
+    generators = "cmake"
 
     def requirements(self):
-        self.requires("json-pareser/1.0.0")
+        self.requires("json-parser/1.0.0")
+
+    def imports(self):
+        self.copy(".h*", src='include')
 
     def build(self):
-         autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
-         tools.dos2unix("configure")
-         tools.dos2unix("configure.ac")
-         tools.dos2unix("Makefile.in")
-         autotools.configure()
-         autotools.make()
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
 
 
     def package(self):
-        self.copy("*.h", dst="include/json-parser/")
         if self.options.shared is True:
             self.copy("*.so", dst="lib", keep_path=False)
         else:
             self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs=["libjsonparser.a"]
+        self.cpp_info.libs=["jsonbuilder"]
